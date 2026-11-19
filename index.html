@@ -1146,6 +1146,7 @@ body.bloqueo-inicial {
 ================================= */
 
 let invitacionAbierta = false;
+let aperturaFinalizada = false;
 
 const esCelular = window.matchMedia("(max-width: 768px)").matches;
 
@@ -1247,16 +1248,20 @@ document.getElementById("whatsapp").href = `https://wa.me/${BODA.whatsapp}?text=
    APERTURA ANIMADA DE LA INVITACIÓN
 ================================= */
 
+/* =================================
+   APERTURA ANIMADA DE LA INVITACIÓN
+================================= */
+
 const botonAbrir = document.getElementById("abrir");
 const portada = document.getElementById("portada");
 
-document.getElementById("abrir").addEventListener("click", function() {
+botonAbrir.addEventListener("click", function () {
 
     if (invitacionAbierta) return;
 
     invitacionAbierta = true;
+    aperturaFinalizada = false;
 
-    // Evitar múltiples clics
     botonAbrir.disabled = true;
 
     // Iniciar música
@@ -1264,16 +1269,18 @@ document.getElementById("abrir").addEventListener("click", function() {
         alternarAudio();
     }
 
-    // Iniciar animación de salida
+    // Iniciar animación
     portada.classList.add("abriendo");
 
     // Desbloquear desplazamiento en celulares
     if (esCelular) {
         document.documentElement.classList.remove("bloqueo-inicial");
         document.body.classList.remove("bloqueo-inicial");
+
+        window.scrollTo(0, 0);
     }
 
-    // Esperar a que termine la animación
+    // Desplazarse al contenido
     setTimeout(() => {
 
         document.getElementById("historia").scrollIntoView({
@@ -1281,9 +1288,40 @@ document.getElementById("abrir").addEventListener("click", function() {
             block: "start"
         });
 
+        // Permitir detectar el regreso al inicio
+        setTimeout(() => {
+            aperturaFinalizada = true;
+        }, 1200);
+
     }, 900);
 
 });
+
+
+/* =================================
+   RESTAURAR PORTADA AL VOLVER ARRIBA
+================================= */
+
+window.addEventListener("scroll", function () {
+
+    if (
+        aperturaFinalizada &&
+        invitacionAbierta &&
+        window.scrollY <= 5
+    ) {
+
+        // Mostrar nuevamente la portada
+        portada.classList.remove("abriendo");
+
+        // Restaurar el estado del botón
+        invitacionAbierta = false;
+        aperturaFinalizada = false;
+
+        botonAbrir.disabled = false;
+
+    }
+
+}, { passive: true });
 
 /* =================================
    CARRUSEL CON DESVANECIMIENTO
